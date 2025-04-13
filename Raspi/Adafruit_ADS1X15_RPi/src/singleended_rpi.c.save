@@ -1,0 +1,163 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <wiringPiSPI.h>
+#include <wiringPi.h>
+
+#include "../Adafruit_ADS1015.h"
+
+  // The ADC input range (or gain) can be changed via the following
+  // functions, but be careful never to exceed VDD +0.3V max, or to
+  // exceed the upper and lower limits if you adjust the input range!
+  // Setting these values incorrectly may destroy your ADC!
+  //                                                                ADS1015  ADS1115
+  //                                                                -------  -------
+  // ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+  // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+ //channel of ADC
+ // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+  // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+
+// channel is the wiringPi name for the chip select (or chip enable) pin.
+// Set this to 0 or 1, depending on how it's connected.
+static const int CHANNEL = 0;
+#define BUTTON_PIN 7
+
+ 
+Adafruit_ADS1115 ads;
+//volatile uint16_t adc0;
+
+
+
+void SimulateEncoder(unsigned short int Pos)
+{
+  static char State = 0;
+  char A, B, Z;
+
+  // Direction change using IO mapping
+  // make encoder go fwd / backwards
+  if (Pos)
+  {
+    A = 25;
+    B = 24;
+    Z = 23;
+ 
+    // " REVERSE"
+  }
+  else
+  {
+    A = 24;
+    B = 25;
+    Z = 23;
+   //" FORWARD"
+  }
+  //manage states
+   State++;
+  //Encoder sim
+  switch (State)
+  {
+    case 0:
+      digitalWrite(A, LOW);
+      break;
+    case 1:
+      digitalWrite(B, HIGH); 
+       break;
+    case 2:
+      digitalWrite(A, HIGH);
+      digitalWrite(Z, HIGH);
+      break;
+    case 3:
+    digitalWrite(B, LOW);
+    digitalWrite(Z, LOW);
+	State = -1;
+	break;
+	default:
+	State = 0;
+	}//END case
+}
+
+int main(int argc, char *argv[])
+{
+	 if (wiringPiSetup () < 0) {
+      printf ("Unable to setup wiringPi\n");
+      return 1;
+  }
+pinMode (25, OUTPUT) ; //A
+pinMode (24, OUTPUT) ; //B
+pinMode (23, OUTPUT) ; //Z
+pinMode (22, OUTPUT) ; //Z
+digitalWrite(22, HIGH);
+ 
+  //uint16_t adc0;
+  double milliVolts;
+  double bits2milliVoltsFactor;
+  bits2milliVoltsFactor = 0.1875; // remember to change this according to gain
+  ads.setGain(GAIN_ONE);
+  ads.begin();
+ 
+
+  
+  /*if ( wiringPiISR (BUTTON_PIN, INT_EDGE_FALLING, &myInterrupt) < 0 ) {
+      printf ("Unable to setup ISR\n");
+      return 1;
+  }*/
+ 
+
+ 
+//  static int LastVal=0;
+  
+  
+    
+  // display counter value every second.
+volatile uint16_t in, in1,in2,in3,in4;
+volatile uint16_t out,out1,out2;
+/*usleep(10000);
+in4 = ads.readADC_SingleEnded(ADC);
+out1=in4;
+usleep(10000);*/
+static uint8_t ADC = 0;
+  while (true) {
+static unsigned short int Pos;
+
+/*in3 = ads.readADC_SingleEnded(ADC);
+usleep(10000);
+in2 = ads.readADC_SingleEnded(ADC);
+usleep(10000);
+in1 = ads.readADC_SingleEnded(ADC);
+usleep(10000);*/
+out = ads.readADC_SingleEnded(ADC);
+usleep(10000)
+out2 = ads.readA
+//out=0.2*(in+in1+in2+in3+in4);
+//in4=in;
+
+	milliVolts = out * bits2milliVoltsFactor; 
+
+	
+  int index;
+  
+  index = out;
+  
+  index -= out1 ; 
+
+  //go fwd / back
+  if (index < 0)
+    Pos = 0;
+
+  else
+    Pos = 1;
+    
+  SimulateEncoder(Pos);
+  //usleep(10000);
+ printf(" *** %d *** %d *** %d\n", out, out2, Pos);
+
+// printf(" *** %d *** %f *** %d\n", out, milliVolts, Pos);
+  out1=out;
+usleep(50000);
+}
+
+return 0;
+}
+
