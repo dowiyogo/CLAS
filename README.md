@@ -1,4 +1,4 @@
-Elosscode: Analisis de datos archivos experimento CLAS de JLab para ver Quark Energy Loss
+Elosscode: Analisis de datos archivos experimento CLAS de JLab para ver Quark Energy Loss. Autor M. Arratia.
 
 Raspi: Códigos utilizados en prueba de radiación de prototipo de doble blanco en JLab para CLAS12
 
